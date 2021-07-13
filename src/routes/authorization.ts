@@ -1,13 +1,11 @@
 import express, { Router } from 'express';
 import { check, validationResult } from 'express-validator';
+import jwt from 'jsonwebtoken';
+import { UserType } from 'src/app.api';
+import { jwtSecretKey } from 'src/config';
 import User from '../models/user';
 
 const authorizationRouter = Router();
-
-export type User = {
-  username: string;
-  password: string;
-};
 
 authorizationRouter.post(
   '/login',
@@ -34,8 +32,8 @@ authorizationRouter.post(
         });
       }
 
-      const { username, password }: User = request.body;
-      const user: User = await User.findOne({ username });
+      const { username, password }: UserType = request.body;
+      const user: UserType = await User.findOne({ username });
 
       if (!user) {
         return result.status(400).json({ message: 'User does not exist' });
@@ -46,10 +44,14 @@ authorizationRouter.post(
       if (!isPasswordsMatch) {
         return result.status(400).json({ message: 'Incorrect password' });
       }
+
+      const token = jwt.sign({ userId: user.id }, jwtSecretKey, { expiresIn: '1h' });
+
+      return result.json({ token, userId: user.id });
     } catch (error) {
-      result.status(500).json({ message: 'Something went wrong. Please try again later' });
+      return result.status(500).json({ message: 'Something went wrong. Please try again later' });
     }
-  }
+  },
 );
 
 export default authorizationRouter;

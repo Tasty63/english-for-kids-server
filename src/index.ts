@@ -13,6 +13,7 @@ async function start() {
       useUnifiedTopology: true,
       useCreateIndex: true,
     });
+
     app.listen(PORT, () => console.log(`Hello ${PORT}`));
   } catch (error) {
     console.log('error', error.message);
