@@ -3,7 +3,7 @@ import { check, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
 import { UserType } from '../app.api';
 import { jwtSecretKey } from '../config';
-import UserModel from '../models/user';
+import UserModel from './user-model';
 
 const authorizationRouter = Router();
 
