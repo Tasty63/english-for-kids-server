@@ -1,8 +1,9 @@
 import { Schema, model } from 'mongoose';
+import { UserType } from 'src/app.api';
 
 const userSchema = new Schema({
-  login: { type: String, requried: true, unique: true },
+  username: { type: String, requried: true, unique: true },
   password: { type: String, requried: true },
 });
 
-export default model('user', userSchema);
+export default model<UserType>('user', userSchema);

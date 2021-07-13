@@ -1,9 +1,9 @@
 import express, { Router } from 'express';
 import { check, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
-import { UserType } from 'src/app.api';
-import { jwtSecretKey } from 'src/config';
-import User from '../models/user';
+import { UserType } from '../app.api';
+import { jwtSecretKey } from '../config';
+import UserModel from '../models/user';
 
 const authorizationRouter = Router();
 
@@ -33,7 +33,7 @@ authorizationRouter.post(
       }
 
       const { username, password }: UserType = request.body;
-      const user: UserType = await User.findOne({ username });
+      const user = await UserModel.findOne({ username });
 
       if (!user) {
         return result.status(400).json({ message: 'User does not exist' });
@@ -51,7 +51,7 @@ authorizationRouter.post(
     } catch (error) {
       return result.status(500).json({ message: 'Something went wrong. Please try again later' });
     }
-  },
+  }
 );
 
 export default authorizationRouter;
