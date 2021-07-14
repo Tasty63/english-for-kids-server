@@ -1,9 +1,10 @@
 import express, { Router } from 'express';
+import { StatusCodes } from 'src/config';
 import CategoryModel from './category-model';
 
 const categoryRouter = Router();
 
-categoryRouter.get('/', async (request, result) => {
+categoryRouter.get('/', async (request: express.Request, result: express.Response) => {
   try {
     const categories = await CategoryModel.find();
 
@@ -13,7 +14,9 @@ categoryRouter.get('/', async (request, result) => {
 
     return result.json({ categories });
   } catch (error) {
-    return result.status(500).json({ message: 'Something went wrong. Please try again later' });
+    return result
+      .status(StatusCodes.InternalServerError)
+      .json({ message: 'Something went wrong. Please try again later' });
   }
 });
 

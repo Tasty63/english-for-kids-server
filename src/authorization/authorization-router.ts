@@ -2,7 +2,7 @@ import express, { Router } from 'express';
 import { check, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
 import { UserType } from '../app.api';
-import { jwtSecretKey } from '../config';
+import { jwtSecretKey, StatusCodes } from '../config';
 import UserModel from './user-model';
 
 const authorizationRouter = Router();
@@ -26,7 +26,7 @@ authorizationRouter.post(
       const errors = validationResult(request);
 
       if (!errors.isEmpty()) {
-        return result.status(400).json({
+        return result.status(StatusCodes.BadRequest).json({
           errors: errors.array(),
           message: 'Incorrect login data',
         });
@@ -36,20 +36,22 @@ authorizationRouter.post(
       const user = await UserModel.findOne({ username });
 
       if (!user) {
-        return result.status(400).json({ message: 'User does not exist' });
+        return result.status(StatusCodes.BadRequest).json({ message: 'User does not exist' });
       }
 
       const isPasswordsMatch = password === user.password;
 
       if (!isPasswordsMatch) {
-        return result.status(400).json({ message: 'Incorrect password' });
+        return result.status(StatusCodes.BadRequest).json({ message: 'Incorrect password' });
       }
 
       const token = jwt.sign({ userId: user.id }, jwtSecretKey, { expiresIn: '1h' });
 
       return result.json({ token, userId: user.id });
     } catch (error) {
-      return result.status(500).json({ message: 'Something went wrong. Please try again later' });
+      return result
+        .status(StatusCodes.InternalServerError)
+        .json({ message: 'Something went wrong. Please try again later' });
     }
   }
 );

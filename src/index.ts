@@ -24,13 +24,8 @@ const start = async (): Promise<void> => {
 
     app.listen(PORT, () => console.log(`Hello ${PORT}`));
   } catch (error) {
-    console.log('error', error.message);
     process.exit(1);
   }
 };
-
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
 
 start();
