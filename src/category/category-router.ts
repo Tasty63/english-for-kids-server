@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { StatusCodes } from 'src/config';
+import { StatusCodes } from '../config';
 import CategoryModel from './category-model';
 
 const categoryRouter = Router();
@@ -12,7 +12,7 @@ categoryRouter.get('/', async (request: express.Request, result: express.Respons
       return result.json({});
     }
 
-    return result.json({ categories });
+    return result.json(categories);
   } catch (error) {
     return result
       .status(StatusCodes.InternalServerError)

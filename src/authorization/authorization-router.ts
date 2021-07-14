@@ -53,7 +53,7 @@ authorizationRouter.post(
         .status(StatusCodes.InternalServerError)
         .json({ message: 'Something went wrong. Please try again later' });
     }
-  }
+  },
 );
 
 export default authorizationRouter;

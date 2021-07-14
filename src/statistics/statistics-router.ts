@@ -13,7 +13,7 @@ statisticsRouter.get('/', async (request: express.Request, result: express.Respo
       return result.json({});
     }
 
-    return result.json({ statistics });
+    return result.json(statistics);
   } catch (error) {
     return result
       .status(StatusCodes.InternalServerError)
@@ -29,7 +29,7 @@ statisticsRouter.get('/:id', async (request: express.Request, result: express.Re
       return result.status(StatusCodes.BadRequest).json({ message: 'Word does not exist' });
     }
 
-    return result.json({ statisticWord });
+    return result.json(statisticWord);
   } catch (error) {
     return result
       .status(StatusCodes.InternalServerError)
@@ -45,7 +45,7 @@ statisticsRouter.delete('/:id', async (request: express.Request, result: express
       return result.status(StatusCodes.BadRequest).json({ message: 'Word does not exist' });
     }
 
-    return result.json({ statisticWord });
+    return result.json(statisticWord);
   } catch (error) {
     return result
       .status(StatusCodes.InternalServerError)
@@ -70,7 +70,18 @@ statisticsRouter.put('/', async (request: express.Request, result: express.Respo
       return result.status(StatusCodes.BadRequest).json({ message: 'Word does not exist' });
     }
 
-    return result.json({ statisticWord });
+    return result.json(statisticWord);
+  } catch (error) {
+    return result
+      .status(StatusCodes.InternalServerError)
+      .json({ message: 'Something went wrong. Please try again later' });
+  }
+});
+
+statisticsRouter.put('/reset', async (request: express.Request, result: express.Response) => {
+  try {
+    const statistics = await StatisticsModel.updateMany({}, { trained: 0, guesses: 0, mistakes: 0 });
+    return result.json(statistics);
   } catch (error) {
     return result
       .status(StatusCodes.InternalServerError)
@@ -80,15 +91,15 @@ statisticsRouter.put('/', async (request: express.Request, result: express.Respo
 
 statisticsRouter.put('/:id', async (request: express.Request, result: express.Response) => {
   try {
-    const { trained } = request.body;
+    const trainedClicks = Number(request.body.trained);
 
-    const statisticWord = await StatisticsModel.updateOne({ id: request.params.id }, { trained });
+    const statisticWord = await StatisticsModel.updateOne({ id: request.params.id }, { trained: trainedClicks });
 
     if (!statisticWord) {
       return result.status(StatusCodes.BadRequest).json({ message: 'Word does not exist' });
     }
 
-    return result.json({ statisticWord });
+    return result.json(statisticWord);
   } catch (error) {
     return result
       .status(StatusCodes.InternalServerError)
