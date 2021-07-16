@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { UserType } from '../app.api';
 import { jwtSecretKey, StatusCodes } from '../config';
 import UserModel from './user-model';
+import checkAuthorization from './authorization-middleware';
 
 const authorizationRouter = Router();
 
@@ -53,7 +54,7 @@ authorizationRouter.post(
         .status(StatusCodes.InternalServerError)
         .json({ message: 'Something went wrong. Please try again later' });
     }
-  },
+  }
 );
 
 export default authorizationRouter;
