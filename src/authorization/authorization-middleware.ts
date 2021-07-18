@@ -1,6 +1,7 @@
 import express from 'express';
-import { StatusCodes, jwtSecretKey } from 'src/config';
+import { StatusCodes, jwtSecretKey } from '../config';
 import jwt from 'jsonwebtoken';
+import something from '../custom.d';
 
 const checkAuthorization = (request: express.Request, result: express.Response, next: express.NextFunction) => {
   try {

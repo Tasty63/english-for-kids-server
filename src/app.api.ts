@@ -5,7 +5,8 @@ export type UserType = {
 };
 
 export interface CategoryType {
-  id: string;
+  __id: string;
+  cloudinary_id: string;
   name: string;
   preview: string;
   words: WordDataType[];

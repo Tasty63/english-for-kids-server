@@ -1,17 +1,17 @@
 import { Schema, model } from 'mongoose';
 import { CategoryType } from '../app.api';
 
-const categorySchema = new Schema<CategoryType>({
-  id: { type: String, requried: true, unique: true },
+const categorySchema = new Schema<CategoryType, any, CategoryType>({
+  cloudinary_id: { type: String },
   name: { type: String, requried: true },
   preview: { type: String, requried: true },
   words: [
     {
-      id: { type: String, requried: true, unique: true },
-      word: { type: String, requried: true },
-      translation: { type: String, requried: true },
-      image: { type: String, requried: true },
-      audioSrc: { type: String, requried: true },
+      id: { type: String },
+      word: { type: String },
+      translation: { type: String },
+      image: { type: String },
+      audioSrc: { type: String },
     },
   ],
 });

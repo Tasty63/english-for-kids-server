@@ -3,8 +3,6 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import { PORT, mongoURL, publicPath, cloudinaryURL } from './config';
-import cloudinary from 'cloudinary';
-import multer from 'multer';
 import authorizationRouter from './authorization/authorization-router';
 import categoryRoter from './category/category-router';
 import statisticsRouter from './statistics/statistics-router';
