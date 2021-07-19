@@ -16,6 +16,3 @@ const storage = new CloudinaryStorage({
 const imageLoader = multer({ storage: storage });
 
 export default imageLoader;
-// cloudinary.v2.uploader.upload('public/images/angry.jpg', { folder: 'images', public_id: 'angry' }, (error, result) => {
-//   console.log(result, error);
-// });
