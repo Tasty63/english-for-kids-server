@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
 import checkAuthorization from '../authorization/authorization-middleware';
-import { StatusCodes } from '../config';
+import { FileFields, getCloudinaryId, StatusCodes } from '../config';
 import CategoryModel from './category-model';
 import imageLoader from '../upload';
 import cloudinary from 'cloudinary';
@@ -24,7 +24,7 @@ categoryRouter.get('/', async (request: express.Request, result: express.Respons
 categoryRouter.post(
   '/create',
   checkAuthorization,
-  imageLoader.single('image'),
+  imageLoader.single(FileFields.Image),
   async (request: express.Request, result: express.Response) => {
     try {
       const { categoryName } = request.body;
@@ -38,8 +38,8 @@ categoryRouter.post(
         folder: 'images',
       });
 
-      const cloudinary_id = imageCloudinaryData.public_id;
       const preview = imageCloudinaryData.secure_url;
+      const cloudinary_id = getCloudinaryId(preview);
 
       const category = new CategoryModel({ name: categoryName, preview, cloudinary_id });
 
@@ -56,7 +56,7 @@ categoryRouter.post(
 categoryRouter.delete(
   '/:id',
   checkAuthorization,
-  imageLoader.single('image'),
+  imageLoader.single(FileFields.Image),
   async (request: express.Request, result: express.Response) => {
     try {
       const category = await CategoryModel.findOneAndDelete({ _id: request.params.id });
@@ -65,7 +65,7 @@ categoryRouter.delete(
         return result.status(StatusCodes.BadRequest).json({ message: 'Category does not exist' });
       }
 
-      const { cloudinary_id } = category;
+      const cloudinary_id = getCloudinaryId(category.preview);
 
       cloudinary.v2.uploader.destroy(cloudinary_id);
 
@@ -85,7 +85,7 @@ categoryRouter.delete(
 categoryRouter.put(
   '/:id',
   checkAuthorization,
-  imageLoader.single('image'),
+  imageLoader.single(FileFields.Image),
   async (request: express.Request, result: express.Response) => {
     try {
       const { categoryName } = request.body;
@@ -100,14 +100,12 @@ categoryRouter.put(
         return;
       }
 
-      cloudinary.v2.uploader.destroy(oldCategory.cloudinary_id);
+      cloudinary.v2.uploader.destroy(getCloudinaryId(oldCategory.preview));
 
       const imageCloudinaryData = await cloudinary.v2.uploader.upload(path, {
         folder: 'images',
       });
-      console.log(imageCloudinaryData);
 
-      const cloudinary_id = imageCloudinaryData.public_id;
       const preview = imageCloudinaryData.secure_url;
 
       const category = await CategoryModel.updateOne(
@@ -115,7 +113,6 @@ categoryRouter.put(
         {
           name: categoryName || oldCategory?.name,
           preview: preview || oldCategory?.preview,
-          cloudinary_id: cloudinary_id || oldCategory?.cloudinary_id,
         }
       );
 

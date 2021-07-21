@@ -10,3 +10,17 @@ export enum StatusCodes {
   NotFound = 404,
   InternalServerError = 500,
 }
+
+export enum FileFields {
+  Audio = 'audio',
+  Image = 'image',
+}
+
+export enum CloudinaryFolders {
+  Audio = 'audio',
+  Images = 'images',
+}
+
+export const getCloudinaryId = (path: string) => {
+  return path.slice(path.lastIndexOf('/') + 1);
+};

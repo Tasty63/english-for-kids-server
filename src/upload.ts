@@ -16,16 +16,6 @@ import express from 'express';
 
 const storage = multer.diskStorage({});
 
-// const filterFiles = (
-//   request: express.Request,
-//   file: Express.Multer.File,
-//   callback: (error: Error | null, destination: string) => void
-// ) => {
-//   if (file.mimetype === 'image/png') {
-//     callback(null, true);
-//   }
-// };
-
 const multerLoader = multer({ storage: storage });
 
 export default multerLoader;

@@ -1,55 +1,54 @@
 import express, { Router } from 'express';
 import checkAuthorization from '../authorization/authorization-middleware';
-import { StatusCodes } from '../config';
+import { CloudinaryFolders, FileFields, StatusCodes } from '../config';
 import CategoryModel from '../category/category-model';
 import multerLoader from '../upload';
 import cloudinary from 'cloudinary';
 
 const wordsRouter = Router();
 
-export enum fileFields {
-  Audio = 'audio',
-  Image = 'image',
-}
-
 wordsRouter.post(
   '/:id',
-  multerLoader.fields([
-    { name: 'image', maxCount: 1 },
-    { name: 'audio', maxCount: 1 },
-  ]),
+  checkAuthorization,
+  multerLoader.fields([{ name: FileFields.Image }, { name: FileFields.Audio }]),
   async (request: express.Request, result: express.Response) => {
     try {
+      const { word, translation, id } = request.body;
       const files = request.files as { [fieldname: string]: Express.Multer.File[] };
-      const image = files['image'][0];
-      const imageCloudinaryData = await cloudinary.v2.uploader.upload(image.path, {
-        folder: 'images',
+      const imageFile = files[FileFields.Image][0];
+      const audioFile = files[FileFields.Audio][0];
+
+      const imageCloudinaryData = await cloudinary.v2.uploader.upload(imageFile.path, {
+        folder: CloudinaryFolders.Images,
       });
-      console.log(imageCloudinaryData);
+      const audioCloudinaryData = await cloudinary.v2.uploader.upload(audioFile.path, {
+        folder: CloudinaryFolders.Audio,
+        resource_type: 'video',
+      });
 
-      // const imageCloudinary_id = request.files?.image[0].filename;
+      const image = imageCloudinaryData.secure_url;
+      const audioSrc = audioCloudinaryData.secure_url;
 
-      // const category = await CategoryModel.findOneAndUpdate(
-      //   { _id: request.params.id },
-      //   {
-      //     $push: {
-      //       words: {
-      //         id: request.body.id,
-      //         word: request.body.word,
-      //         translation: request.body.translation,
-      //         image: request.body.image,
-      //         audioSrc: request.body.audioSrc,
-      //       },
-      //     },
-      //   },
-      //   { new: true }
-      // );
+      const category = await CategoryModel.findOneAndUpdate(
+        { _id: request.params.id },
+        {
+          $push: {
+            words: {
+              word,
+              translation,
+              image,
+              audioSrc,
+            },
+          },
+        },
+        { new: true }
+      );
 
-      // if (!category) {
-      //   return result.json({});
-      // }
+      if (!category) {
+        return result.json({});
+      }
 
-      // return result.json(category);
+      return result.json(category);
     } catch (error) {
       result.status(StatusCodes.InternalServerError).json({ message: 'Something went wrong. Please try again later' });
     }
