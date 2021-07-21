@@ -13,7 +13,7 @@ wordsRouter.post(
   multerLoader.fields([{ name: FileFields.Image }, { name: FileFields.Audio }]),
   async (request: express.Request, result: express.Response) => {
     try {
-      const { word, translation, id } = request.body;
+      const { word, translation } = request.body;
       const files = request.files as { [fieldname: string]: Express.Multer.File[] };
       const imageFile = files[FileFields.Image][0];
       const audioFile = files[FileFields.Audio][0];

@@ -29,19 +29,23 @@ categoryRouter.post(
     try {
       const { categoryName } = request.body;
       const path = request.file?.path;
+      let preview = '';
+      let cloudinary_id = '';
 
-      if (!path) {
-        return;
+      if (path) {
+        const imageCloudinaryData = await cloudinary.v2.uploader.upload(path, {
+          folder: 'images',
+        });
+
+        preview = imageCloudinaryData.secure_url;
+        cloudinary_id = getCloudinaryId(preview);
       }
 
-      const imageCloudinaryData = await cloudinary.v2.uploader.upload(path, {
-        folder: 'images',
+      const category = new CategoryModel({
+        name: categoryName,
+        preview,
+        cloudinary_id,
       });
-
-      const preview = imageCloudinaryData.secure_url;
-      const cloudinary_id = getCloudinaryId(preview);
-
-      const category = new CategoryModel({ name: categoryName, preview, cloudinary_id });
 
       const saved = await category.save();
       const categories = await CategoryModel.find();
