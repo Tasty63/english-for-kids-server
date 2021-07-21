@@ -96,23 +96,27 @@ categoryRouter.put(
         return result.status(StatusCodes.BadRequest).json({ message: 'Category does not exist' });
       }
 
-      if (!path) {
-        return;
+      let { name, preview } = oldCategory;
+
+      if (path) {
+        cloudinary.v2.uploader.destroy(getCloudinaryId(oldCategory.preview));
+
+        const imageCloudinaryData = await cloudinary.v2.uploader.upload(path, {
+          folder: 'images',
+        });
+
+        preview = imageCloudinaryData.secure_url;
       }
 
-      cloudinary.v2.uploader.destroy(getCloudinaryId(oldCategory.preview));
-
-      const imageCloudinaryData = await cloudinary.v2.uploader.upload(path, {
-        folder: 'images',
-      });
-
-      const preview = imageCloudinaryData.secure_url;
+      if (categoryName) {
+        name = categoryName;
+      }
 
       const category = await CategoryModel.updateOne(
         { _id: request.params.id },
         {
-          name: categoryName || oldCategory?.name,
-          preview: preview || oldCategory?.preview,
+          name,
+          preview,
         }
       );
 
