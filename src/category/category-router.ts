@@ -29,9 +29,19 @@ categoryRouter.post(
     try {
       const { categoryName } = request.body;
       const path = request.file?.path;
-      const cloudinary_id = request.file?.filename;
 
-      const category = new CategoryModel({ name: categoryName, preview: path, cloudinary_id });
+      if (!path) {
+        return;
+      }
+
+      const imageCloudinaryData = await cloudinary.v2.uploader.upload(path, {
+        folder: 'images',
+      });
+
+      const cloudinary_id = imageCloudinaryData.public_id;
+      const preview = imageCloudinaryData.secure_url;
+
+      const category = new CategoryModel({ name: categoryName, preview, cloudinary_id });
 
       const saved = await category.save();
       const categories = await CategoryModel.find();
@@ -80,26 +90,34 @@ categoryRouter.put(
     try {
       const { categoryName } = request.body;
       const path = request.file?.path;
-      const cloudinary_id = request.file?.filename;
-
       const oldCategory = await CategoryModel.findOne({ _id: request.params.id });
 
       if (!oldCategory) {
         return result.status(StatusCodes.BadRequest).json({ message: 'Category does not exist' });
       }
 
+      if (!path) {
+        return;
+      }
+
+      cloudinary.v2.uploader.destroy(oldCategory.cloudinary_id);
+
+      const imageCloudinaryData = await cloudinary.v2.uploader.upload(path, {
+        folder: 'images',
+      });
+      console.log(imageCloudinaryData);
+
+      const cloudinary_id = imageCloudinaryData.public_id;
+      const preview = imageCloudinaryData.secure_url;
+
       const category = await CategoryModel.updateOne(
         { _id: request.params.id },
         {
           name: categoryName || oldCategory?.name,
-          preview: path || oldCategory?.preview,
+          preview: preview || oldCategory?.preview,
           cloudinary_id: cloudinary_id || oldCategory?.cloudinary_id,
         }
       );
-
-      if (cloudinary_id && oldCategory) {
-        cloudinary.v2.uploader.destroy(oldCategory.cloudinary_id);
-      }
 
       const categories = await CategoryModel.find();
 
