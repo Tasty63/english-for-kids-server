@@ -1,9 +1,10 @@
 import express, { Router } from 'express';
 import checkAuthorization from '../authorization/authorization-middleware';
-import { CloudinaryFolders, FileFields, StatusCodes } from '../config';
+import { CloudinaryFolders, FileFields, getCloudinaryId, StatusCodes } from '../config';
 import CategoryModel from '../category/category-model';
 import multerLoader from '../upload';
 import cloudinary from 'cloudinary';
+import mongoose from 'mongoose';
 
 const wordsRouter = Router();
 
@@ -15,19 +16,28 @@ wordsRouter.post(
     try {
       const { word, translation } = request.body;
       const files = request.files as { [fieldname: string]: Express.Multer.File[] };
-      const imageFile = files[FileFields.Image][0];
-      const audioFile = files[FileFields.Audio][0];
+      let imageFile;
+      let audioFile;
+      let image = '';
+      let audioSrc = '';
 
-      const imageCloudinaryData = await cloudinary.v2.uploader.upload(imageFile.path, {
-        folder: CloudinaryFolders.Images,
-      });
-      const audioCloudinaryData = await cloudinary.v2.uploader.upload(audioFile.path, {
-        folder: CloudinaryFolders.Audio,
-        resource_type: 'video',
-      });
+      if (files[FileFields.Image]) {
+        imageFile = files[FileFields.Image][0];
+        const imageCloudinaryData = await cloudinary.v2.uploader.upload(imageFile.path, {
+          folder: CloudinaryFolders.Images,
+        });
+        image = imageCloudinaryData.secure_url;
+      }
 
-      const image = imageCloudinaryData.secure_url;
-      const audioSrc = audioCloudinaryData.secure_url;
+      if (files[FileFields.Audio]) {
+        audioFile = files[FileFields.Audio][0];
+        const audioCloudinaryData = await cloudinary.v2.uploader.upload(audioFile.path, {
+          folder: CloudinaryFolders.Audio,
+          resource_type: 'video',
+        });
+
+        audioSrc = audioCloudinaryData.secure_url;
+      }
 
       const category = await CategoryModel.findOneAndUpdate(
         { _id: request.params.id },
@@ -57,6 +67,20 @@ wordsRouter.post(
 
 wordsRouter.delete('/:id', multerLoader.single('image'), async (request: express.Request, result: express.Response) => {
   try {
+    const deletedId = mongoose.Types.ObjectId(request.params.id);
+
+    const cat = await CategoryModel.aggregate([
+      { $unwind: '$words' },
+      {
+        $match: {
+          'words._id': deletedId,
+        },
+      },
+    ]);
+
+    const imageCloudinaryId = getCloudinaryId(cat[0].words.image);
+    const audioCloudinaryId = getCloudinaryId(cat[0].words.audioSrc);
+
     const category = await CategoryModel.findOneAndUpdate(
       {},
       {
@@ -70,6 +94,9 @@ wordsRouter.delete('/:id', multerLoader.single('image'), async (request: express
     if (!category) {
       return result.json({});
     }
+
+    cloudinary.v2.uploader.destroy(imageCloudinaryId);
+    cloudinary.v2.uploader.destroy(audioCloudinaryId);
 
     return result.json(category);
   } catch (error) {

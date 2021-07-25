@@ -5,19 +5,18 @@ export type UserType = {
 };
 
 export interface CategoryType {
-  __id: string;
-  cloudinary_id: string;
+  _id: string;
   name: string;
   preview: string;
   words: WordDataType[];
 }
 
 export type WordDataType = {
+  _id: string;
   word: string;
   translation: string;
   image: string;
   audioSrc: string;
-  id: string;
 };
 
 export type StatisticWordType = {
